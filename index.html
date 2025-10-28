@@ -119,7 +119,7 @@
         <h2>IRG Baden (2025)</h2>
     </div>
     
-    <canvas id="networkCanvas" width="1400" height="1000"></canvas>
+    <canvas id="networkCanvas" width="1600" height="1200"></canvas>
     
     <div class="controls">
         <button onclick="resetView()">Ansicht zurücksetzen</button>
@@ -170,16 +170,17 @@
         let lastX = 0;
         let lastY = 0;
         
-        // Central node
+        // Central node - УВЕЛИЧЕН
         const center = {
-            x: 700,
-            y: 500,
+            x: 800,
+            y: 600,
+            radius: 70,  // Увеличен радиус с 45 до 70
             label: "Rami Suliman",
             subtitle: "Vorsitzende IRG Baden"
         };
         
         // City clusters positioned in circle around center
-        const radius = 320;
+        const radius = 380;
         const clusters = [
             {
                 city: "Pforzheim",
@@ -188,8 +189,7 @@
                     { 
                         label: "Cousin (Security)", 
                         deps: ["familie", "sicherheit"],
-                        offsetX: -20,
-                        offsetY: 0
+                        labelSide: "left"
                     }
                 ]
             },
@@ -201,15 +201,15 @@
                         label: "Frau Shenker", 
                         subtitle: "Vorsitzende & Oberrat", 
                         deps: ["oberrat"],
-                        offsetX: -50,
-                        offsetY: -10
+                        labelSide: "left",
+                        offsetY: -25
                     },
                     { 
                         label: "Sohn (Security)", 
                         deps: ["familie", "sicherheit"], 
                         parent: 0,
-                        offsetX: -50,
-                        offsetY: 20
+                        labelSide: "left",
+                        offsetY: 25
                     }
                 ]
             },
@@ -221,15 +221,15 @@
                         label: "Herr Albilia", 
                         subtitle: "IRG-Mitarbeiter, Oberrat-Ersatz", 
                         deps: ["sicherheit", "oberrat"],
-                        offsetX: 0,
-                        offsetY: -30
+                        labelSide: "top",
+                        offsetY: -25
                     },
                     { 
                         label: "Sohn (Security)", 
                         deps: ["familie", "sicherheit"], 
                         parent: 0,
-                        offsetX: 0,
-                        offsetY: 10
+                        labelSide: "bottom",
+                        offsetY: 25
                     }
                 ]
             },
@@ -241,15 +241,15 @@
                         label: "Irina Katz", 
                         subtitle: "Vorsitzende & Oberrat", 
                         deps: ["oberrat"],
-                        offsetX: -60,
-                        offsetY: 10
+                        labelSide: "left",
+                        offsetY: -25
                     },
                     { 
                         label: "Sohn Nikita (Security)", 
                         deps: ["familie", "sicherheit"], 
                         parent: 0,
-                        offsetX: -60,
-                        offsetY: 40
+                        labelSide: "left",
+                        offsetY: 25
                     }
                 ]
             },
@@ -261,16 +261,16 @@
                         label: "Tatiana Malafi", 
                         subtitle: "Vorsitzende / Geschäftsführerin", 
                         deps: ["sicherheit"],
-                        offsetX: 0,
-                        offsetY: 40
+                        labelSide: "bottom",
+                        offsetY: -35
                     },
                     { 
                         label: "Sohn Mischa", 
                         subtitle: "Security-Chef, Oberrat-Ersatz", 
                         deps: ["familie", "sicherheit", "oberrat"], 
                         parent: 0,
-                        offsetX: 0,
-                        offsetY: 80
+                        labelSide: "bottom",
+                        offsetY: 35
                     }
                 ]
             },
@@ -282,22 +282,25 @@
                         label: "Olga Maryanovskaya", 
                         subtitle: "Vorsitzende & Oberrat", 
                         deps: ["oberrat"],
-                        offsetX: 30,
+                        labelSide: "right",
+                        offsetX: -30,
                         offsetY: -40
                     },
                     { 
                         label: "Tochter (Jugendchefin)", 
                         deps: ["familie", "sicherheit"], 
                         parent: 0,
-                        offsetX: 60,
+                        labelSide: "right",
+                        offsetX: 30,
                         offsetY: -10
                     },
                     { 
                         label: "Ruslan Manasherov", 
                         subtitle: "Security-Chef & Oberrat", 
                         deps: ["sicherheit", "oberrat"],
-                        offsetX: 60,
-                        offsetY: 20
+                        labelSide: "right",
+                        offsetX: 30,
+                        offsetY: 30
                     }
                 ]
             },
@@ -308,8 +311,7 @@
                     { 
                         label: "ehem. Security-Chef Koch", 
                         deps: ["sicherheit"],
-                        offsetX: 50,
-                        offsetY: 0
+                        labelSide: "right"
                     }
                 ]
             },
@@ -321,8 +323,7 @@
                         label: "Dima", 
                         subtitle: "Hausmeister + Lieferdienste", 
                         deps: ["sicherheit"],
-                        offsetX: 40,
-                        offsetY: 10
+                        labelSide: "right"
                     }
                 ]
             },
@@ -334,8 +335,7 @@
                         label: "Sicherheitskraft", 
                         subtitle: "Revierfahrer-Hintergrund", 
                         deps: ["sicherheit"],
-                        offsetX: 40,
-                        offsetY: 30
+                        labelSide: "right"
                     }
                 ]
             }
@@ -367,7 +367,7 @@
             const angle = Math.atan2(toY - fromY, toX - fromX);
             const headLength = 15;
             
-            const shortenTo = 50;
+            const shortenTo = center.radius + 5;  // Учитываем новый размер центрального круга
             const dx = toX - fromX;
             const dy = toY - fromY;
             const length = Math.sqrt(dx * dx + dy * dy);
@@ -414,6 +414,45 @@
             return lines;
         }
         
+        function drawLabel(text, x, y, side, isBold = false, isSubtitle = false) {
+            const maxWidth = 140;
+            const lineHeight = 14;
+            
+            ctx.font = isBold ? "bold 12px sans-serif" : (isSubtitle ? "11px sans-serif" : "12px sans-serif");
+            ctx.fillStyle = isSubtitle ? "#666" : "#1a1a1a";
+            
+            const lines = wrapText(text, maxWidth);
+            
+            switch(side) {
+                case "left":
+                    ctx.textAlign = "right";
+                    lines.forEach((line, idx) => {
+                        ctx.fillText(line, x - 18, y + idx * lineHeight);
+                    });
+                    break;
+                case "right":
+                    ctx.textAlign = "left";
+                    lines.forEach((line, idx) => {
+                        ctx.fillText(line, x + 18, y + idx * lineHeight);
+                    });
+                    break;
+                case "top":
+                    ctx.textAlign = "center";
+                    lines.forEach((line, idx) => {
+                        ctx.fillText(line, x, y - 18 - (lines.length - 1 - idx) * lineHeight);
+                    });
+                    break;
+                case "bottom":
+                    ctx.textAlign = "center";
+                    lines.forEach((line, idx) => {
+                        ctx.fillText(line, x, y + 18 + idx * lineHeight);
+                    });
+                    break;
+            }
+            
+            return lines.length * lineHeight;
+        }
+        
         function drawNetwork() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.save();
@@ -427,7 +466,7 @@
                 ctx.lineWidth = 2;
                 ctx.setLineDash([8, 4]);
                 ctx.beginPath();
-                ctx.arc(cluster.x, cluster.y, 100, 0, Math.PI * 2);
+                ctx.arc(cluster.x, cluster.y, 120, 0, Math.PI * 2);
                 ctx.stroke();
                 ctx.setLineDash([]);
                 
@@ -435,7 +474,7 @@
                 ctx.fillStyle = "#1e40af";
                 ctx.font = "bold 18px sans-serif";
                 ctx.textAlign = "center";
-                ctx.fillText(cluster.city, cluster.x, cluster.y - 115);
+                ctx.fillText(cluster.city, cluster.x, cluster.y - 135);
                 
                 // Draw connections first (so they're behind nodes)
                 cluster.nodes.forEach((node, idx) => {
@@ -454,7 +493,7 @@
                         ctx.setLineDash([5, 5]);
                         ctx.beginPath();
                         ctx.moveTo(parentX + 10, parentY);
-                        const cpX = (parentX + nodeX) / 2 - 30;
+                        const cpX = (parentX + nodeX) / 2 - 35;
                         const cpY = (parentY + nodeY) / 2;
                         ctx.quadraticCurveTo(cpX, cpY, nodeX + 10, nodeY);
                         ctx.stroke();
@@ -498,45 +537,43 @@
                     ctx.fill();
                     ctx.stroke();
                     
-                    // Node labels with better positioning
+                    // Node labels with smart positioning
                     if (showLabels) {
-                        ctx.fillStyle = "#1a1a1a";
-                        ctx.font = "bold 12px sans-serif";
-                        ctx.textAlign = "left";
+                        const side = node.labelSide || "right";
+                        let currentY = nodeY + 4;
                         
-                        const labelX = nodeX + 15;
-                        const labelY = nodeY + 4;
-                        
-                        const lines = wrapText(node.label, 120);
-                        lines.forEach((line, lineIdx) => {
-                            ctx.fillText(line, labelX, labelY + lineIdx * 14);
-                        });
+                        const mainHeight = drawLabel(node.label, nodeX, currentY, side, true, false);
                         
                         if (node.subtitle) {
-                            ctx.fillStyle = "#666";
-                            ctx.font = "11px sans-serif";
-                            const subLines = wrapText(node.subtitle, 120);
-                            subLines.forEach((line, lineIdx) => {
-                                ctx.fillText(line, labelX, labelY + (lines.length + lineIdx) * 14 + 2);
-                            });
+                            currentY += mainHeight;
+                            drawLabel(node.subtitle, nodeX, currentY, side, false, true);
                         }
                     }
                 });
             });
             
-            // Draw center node (Rami Suliman) - on top
+            // Draw center node (Rami Suliman) - УВЕЛИЧЕН И УЛУЧШЕН
             ctx.fillStyle = "#1e40af";
             ctx.beginPath();
-            ctx.arc(center.x, center.y, 45, 0, Math.PI * 2);
+            ctx.arc(center.x, center.y, center.radius, 0, Math.PI * 2);
             ctx.fill();
             
+            // Белая граница для контраста
+            ctx.strokeStyle = "white";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
             ctx.fillStyle = "white";
-            ctx.font = "bold 16px sans-serif";
             ctx.textAlign = "center";
-            ctx.fillText("Rami Suliman", center.x, center.y - 8);
-            ctx.font = "12px sans-serif";
-            ctx.fillText("Vorsitzende", center.x, center.y + 8);
-            ctx.fillText("IRG Baden", center.x, center.y + 24);
+            
+            // Имя - жирное и большое
+            ctx.font = "bold 18px sans-serif";
+            ctx.fillText("Rami Suliman", center.x, center.y - 10);
+            
+            // Должность - меньше
+            ctx.font = "13px sans-serif";
+            ctx.fillText("Vorsitzende", center.x, center.y + 10);
+            ctx.fillText("IRG Baden", center.x, center.y + 28);
             
             ctx.restore();
         }
