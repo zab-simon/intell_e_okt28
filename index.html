@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Structural Bias & Power Entanglement Map — IRG Baden</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+```
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #f8f9fa;
+        padding: 20px;
+    }
+    
+    .container {
+        max-width: 1600px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    
+    .header {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+    
+    .header h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+    
+    .header p {
+        font-size: 14px;
+        opacity: 0.9;
+        font-style: italic;
+    }
+    
+    .legend {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        padding: 25px;
+        background: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+    }
+    
+    .legend-color {
+        width: 30px;
+        height: 4px;
+        border-radius: 2px;
+    }
+    
+    .legend-node {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid #333;
+    }
+    
+    #network {
+        width: 100%;
+        height: 900px;
+        position: relative;
+    }
+    
+    .node {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .node:hover {
+        filter: brightness(1.2);
+    }
+    
+    .node-label {
+        font-size: 11px;
+        font-weight: 600;
+        pointer-events: none;
+        text-shadow: 0 0 3px white, 0 0 3px white;
+    }
+    
+    .node-sublabel {
+        font-size: 9px;
+        fill: #666;
+        pointer-events: none;
+        text-shadow: 0 0 3px white, 0 0 3px white;
+    }
+    
+    .link {
+        fill: none;
+        stroke-width: 2;
+        opacity: 0.6;
+        transition: all 0.3s ease;
+    }
+    
+    .link:hover {
+        opacity: 1;
+        stroke-width: 3;
+    }
+    
+    .link-label {
+        font-size: 9px;
+        fill: #333;
+        text-anchor: middle;
+        pointer-events: none;
+        background: white;
+        padding: 2px 4px;
+    }
+    
+    .cluster {
+        fill: rgba(100, 149, 237, 0.05);
+        stroke: #6495ED;
+        stroke-width: 2;
+        stroke-dasharray: 5,5;
+        opacity: 0.5;
+    }
+    
+    .risk-indicator {
+        font-size: 10px;
+        font-weight: bold;
+        fill: white;
+        text-anchor: middle;
+    }
+    
+    .caption {
+        padding: 25px;
+        background: #fff3cd;
+        border-top: 3px solid #ffc107;
+        font-size: 13px;
+        line-height: 1.8;
+        color: #856404;
+    }
+    
+    .caption strong {
+        color: #721c24;
+    }
+    
+    .controls {
+        padding: 20px;
+        background: #e9ecef;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    
+    .control-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        background: #495057;
+        color: white;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s;
+    }
+    
+    .control-btn:hover {
+        background: #343a40;
+        transform: translateY(-1px);
+    }
+    
+    .tooltip {
+        position: absolute;
+        padding: 10px;
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        border-radius: 6px;
+        pointer-events: none;
+        font-size: 12px;
+        z-index: 1000;
+        max-width: 300px;
+        line-height: 1.4;
+        display: none;
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Structural Bias & Power Entanglement Map</h1>
+            <p>IRG Baden — Institutional, Familial & Functional Conflicts of Interest (2025)</p>
+        </div>
+
+```
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background: #dc3545;"></div>
+            <span><strong>Family Link</strong> — Verwandtschaft</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #fd7e14;"></div>
+            <span><strong>Security/Employment</strong> — Sicherheit/Anstellung</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #9333ea;"></div>
+            <span><strong>Oberrat/Delegation</strong> — Aufsichtsrat</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #0d6efd;"></div>
+            <span><strong>Administrative/Governance</strong> — Verwaltung</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #6c757d; opacity: 0.5;"></div>
+            <span><strong>Feedback Loop</strong> — Rückkopplungsschleife</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-node" style="background: #8b0000; border-color: #8b0000;"></div>
+            <span><strong>Critical Risk</strong> — Höchstes Risiko (3+ Rollen)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-node" style="background: #ff6b6b; border-color: #ff6b6b;"></div>
+            <span><strong>High Risk</strong> — Hohes Risiko (2 Rollen)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-node" style="background: #4dabf7; border-color: #4dabf7;"></div>
+            <span><strong>Moderate</strong> — Moderate Position</span>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <button class="control-btn" onclick="resetView()">↻ Reset View</button>
+        <button class="control-btn" onclick="toggleClusters()">⬚ Toggle City Clusters</button>
+        <button class="control-btn" onclick="highlightFamilyLinks()">👨‍👩‍👦 Highlight Family Links</button>
+        <button class="control-btn" onclick="highlightSecurityLinks()">🛡️ Highlight Security</button>
+        <button class="control-btn" onclick="highlightOberrat()">⚖️ Highlight Oberrat</button>
+    </div>
+    
+    <div id="network"></div>
+    
+    <div class="caption">
+        <strong>Visualization of multi-layered familial and institutional entanglements within IRG Baden (2025).</strong><br>
+        This network map reveals systematic violations of the <em>Trennungsprinzip</em> (separation principle) where administration, oversight, and control functions are not properly separated. Critical conflicts include: family members controlling security while relatives hold oversight positions, employees serving on boards that supervise their employment, and concentrated power in individuals holding 3+ simultaneous conflicting roles. <strong>Source:</strong> Internal structural-bias dataset.
+    </div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+    // Data structure
+    const data = {
+        nodes: [
+            // Central node
+            { id: 'irg-baden', label: 'IRG Baden', type: 'central', city: 'Baden', risk: 0, x: 800, y: 450 },
+            
+            // Lörrach
+            { id: 'shenker', label: 'Frau Shenker', sublabel: 'Chair & Oberratsdelegierte', type: 'chair', city: 'Lörrach', risk: 2, roles: ['Chair', 'Oberrat'] },
+            { id: 'shenker-son', label: 'Sohn Shenker', sublabel: 'Security', type: 'security', city: 'Lörrach', risk: 1, roles: ['Security'] },
+            
+            // Konstanz
+            { id: 'albilia', label: 'Herr Albilia', sublabel: 'IRG employee, Oberrat subst., KA Board', type: 'employee', city: 'Konstanz', risk: 3, roles: ['Employee', 'Oberrat', 'Board'] },
+            { id: 'albilia-son', label: 'Sohn Albilia', sublabel: 'Security', type: 'security', city: 'Konstanz', risk: 1, roles: ['Security'] },
+            
+            // Freiburg
+            { id: 'katz-i', label: 'Irina Katz', sublabel: 'Chair & Oberratsdelegierte', type: 'chair', city: 'Freiburg', risk: 2, roles: ['Chair', 'Oberrat'] },
+            { id: 'katz-n', label: 'Nikita Katz', sublabel: 'Security', type: 'security', city: 'Freiburg', risk: 1, roles: ['Security'] },
+            
+            // Rottweil
+            { id: 'malafy-t', label: 'Tatiana Malafy', sublabel: 'Chair/Board', type: 'chair', city: 'Rottweil', risk: 2, roles: ['Chair', 'Board'] },
+            { id: 'malafy-sister', label: 'Sister Malafy', sublabel: 'Oberrat', type: 'oberrat', city: 'Rottweil', risk: 1, roles: ['Oberrat'] },
+            { id: 'malafy-m', label: 'Mischa Malafy', sublabel: 'Security Chief Baden, Oberrat subst., Kassenprüfer', type: 'security-chief', city: 'Rottweil', risk: 3, roles: ['Security Chief', 'Oberrat', 'Auditor'] },
+            
+            // Emmendingen
+            { id: 'maryanovskaya', label: 'Olga Maryanovskaya', sublabel: 'Chair & Oberrat', type: 'chair', city: 'Emmendingen', risk: 2, roles: ['Chair', 'Oberrat'] },
+            { id: 'maryanovskaya-daughter', label: 'Tochter Maryanovskaya', sublabel: 'Youth Chair', type: 'youth', city: 'Emmendingen', risk: 1, roles: ['Youth Chair'] },
+            { id: 'menasherov', label: 'Ruslan Menasherov', sublabel: 'Security Chief, Oberratsdelegierter', type: 'security-chief', city: 'Emmendingen', risk: 2, roles: ['Security Chief', 'Oberrat'] },
+            
+            // Pforzheim
+            { id: 'suliman', label: 'Rami Suliman', sublabel: 'Chair & Oberrat', type: 'chair', city: 'Pforzheim', risk: 2, roles: ['Chair', 'Oberrat'] },
+            { id: 'suliman-cousin', label: 'Cousin Suliman', sublabel: 'Security', type: 'security', city: 'Pforzheim', risk: 1, roles: ['Security'] },
+            
+            // Mannheim
+            { id: 'benizri', label: 'Susanne Benizri', sublabel: 'IRG Baden employee & Board member', type: 'employee', city: 'Mannheim', risk: 2, roles: ['Employee', 'Board'] }
+        ],
+        
+        links: [
+            // Central connections
+            { source: 'irg-baden', target: 'shenker', type: 'hierarchy', label: 'delegates' },
+            { source: 'irg-baden', target: 'albilia', type: 'employment', label: 'employs' },
+            { source: 'irg-baden', target: 'katz-i', type: 'hierarchy', label: 'delegates' },
+            { source: 'irg-baden', target: 'malafy-t', type: 'hierarchy', label: 'delegates' },
+            { source: 'irg-baden', target: 'maryanovskaya', type: 'hierarchy', label: 'delegates' },
+            { source: 'irg-baden', target: 'suliman', type: 'hierarchy', label: 'delegates' },
+            { source: 'irg-baden', target: 'benizri', type: 'employment', label: 'employs' },
+            
+            // Lörrach
+            { source: 'shenker', target: 'shenker-son', type: 'family', label: 'mother-son' },
+            { source: 'shenker-son', target: 'shenker', type: 'feedback', label: 'reports to' },
+            
+            // Konstanz
+            { source: 'albilia', target: 'albilia-son', type: 'family', label: 'father-son' },
+            { source: 'albilia-son', target: 'irg-baden', type: 'security', label: 'security for' },
+            { source: 'albilia', target: 'irg-baden', type: 'oberrat', label: 'oversees' },
+            
+            // Freiburg
+            { source: 'katz-i', target: 'katz-n', type: 'family', label: 'mother-son' },
+            { source: 'katz-n', target: 'katz-i', type: 'feedback', label: 'reports to' },
+            
+            // Rottweil
+            { source: 'malafy-t', target: 'malafy-sister', type: 'family', label: 'sisters' },
+            { source: 'malafy-t', target: 'malafy-m', type: 'family', label: 'mother-son' },
+            { source: 'malafy-m', target: 'irg-baden', type: 'security', label: 'security chief' },
+            { source: 'malafy-m', target: 'irg-baden', type: 'oberrat', label: 'oversees' },
+            { source: 'malafy-m', target: 'irg-baden', type: 'admin', label: 'audits' },
+            
+            // Emmendingen
+            { source: 'maryanovskaya', target: 'maryanovskaya-daughter', type: 'family', label: 'mother-daughter' },
+            { source: 'maryanovskaya-daughter', target: 'benizri', type: 'admin', label: 'works with' },
+            { source: 'maryanovskaya', target: 'menasherov', type: 'admin', label: 'supervises' },
+            { source: 'menasherov', target: 'irg-baden', type: 'security', label: 'security chief' },
+            { source: 'menasherov', target: 'maryanovskaya', type: 'feedback', label: 'reports to' },
+            
+            // Pforzheim
+            { source: 'suliman', target: 'suliman-cousin', type: 'family', label: 'cousins' },
+            { source: 'suliman-cousin', target: 'suliman', type: 'feedback', label: 'reports to' },
+            
+            // Mannheim
+            { source: 'benizri', target: 'irg-baden', type: 'admin', label: 'board member' }
+        ]
+    };
+
+    // City positions for clustering
+    const cityPositions = {
+        'Baden': { x: 800, y: 450 },
+        'Lörrach': { x: 300, y: 200 },
+        'Konstanz': { x: 1100, y: 200 },
+        'Freiburg': { x: 200, y: 500 },
+        'Rottweil': { x: 800, y: 150 },
+        'Emmendingen': { x: 500, y: 700 },
+        'Pforzheim': { x: 1100, y: 500 },
+        'Mannheim': { x: 1300, y: 700 }
+    };
+
+    // Set up SVG
+    const width = document.getElementById('network').offsetWidth;
+    const height = 900;
+    
+    const svg = d3.select('#network')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+    // Add zoom behavior
+    const g = svg.append('g');
+    
+    const zoom = d3.zoom()
+        .scaleExtent([0.3, 3])
+        .on('zoom', (event) => {
+            g.attr('transform', event.transform);
+        });
+    
+    svg.call(zoom);
+
+    // Color scales
+    const linkColors = {
+        'family': '#dc3545',
+        'security': '#fd7e14',
+        'oberrat': '#9333ea',
+        'admin': '#0d6efd',
+        'hierarchy': '#0d6efd',
+        'employment': '#fd7e14',
+        'feedback': '#6c757d'
+    };
+
+    const nodeColors = d => {
+        if (d.risk >= 3) return '#8b0000';
+        if (d.risk === 2) return '#ff6b6b';
+        if (d.type === 'central') return '#2c3e50';
+        return '#4dabf7';
+    };
+
+    // Initialize positions based on city
+    data.nodes.forEach(node => {
+        if (node.city && cityPositions[node.city] && !node.x) {
+            const cityPos = cityPositions[node.city];
+            node.x = cityPos.x + (Math.random() - 0.5) * 150;
+            node.y = cityPos.y + (Math.random() - 0.5) * 150;
+        }
+    });
+
+    // Create city clusters
+    const clusterGroup = g.append('g').attr('class', 'clusters');
+    
+    Object.entries(cityPositions).forEach(([city, pos]) => {
+        if (city !== 'Baden') {
+            clusterGroup.append('circle')
+                .attr('cx', pos.x)
+                .attr('cy', pos.y)
+                .attr('r', 120)
+                .attr('class', 'cluster');
+            
+            clusterGroup.append('text')
+                .attr('x', pos.x)
+                .attr('y', pos.y - 130)
+                .attr('text-anchor', 'middle')
+                .attr('font-size', '14px')
+                .attr('font-weight', 'bold')
+                .attr('fill', '#495057')
+                .text(city);
+        }
+    });
+
+    // Create links
+    const link = g.append('g')
+        .selectAll('path')
+        .data(data.links)
+        .join('path')
+        .attr('class', 'link')
+        .attr('stroke', d => linkColors[d.type])
+        .attr('stroke-dasharray', d => d.type === 'feedback' ? '5,5' : 'none')
+        .attr('marker-end', d => d.type === 'hierarchy' ? 'url(#arrow)' : '');
+
+    // Add arrow marker
+    svg.append('defs').append('marker')
+        .attr('id', 'arrow')
+        .attr('viewBox', '0 -5 10 10')
+        .attr('refX', 25)
+        .attr('refY', 0)
+        .attr('markerWidth', 6)
+        .attr('markerHeight', 6)
+        .attr('orient', 'auto')
+        .append('path')
+        .attr('d', 'M0,-5L10,0L0,5')
+        .attr('fill', '#0d6efd');
+
+    // Create link labels
+    const linkLabels = g.append('g')
+        .selectAll('text')
+        .data(data.links)
+        .join('text')
+        .attr('class', 'link-label')
+        .text(d => d.label);
+
+    // Create nodes
+    const node = g.append('g')
+        .selectAll('g')
+        .data(data.nodes)
+        .join('g')
+        .attr('class', 'node')
+        .call(d3.drag()
+            .on('start', dragstarted)
+            .on('drag', dragged)
+            .on('end', dragended));
+
+    node.append('circle')
+        .attr('r', d => d.type === 'central' ? 30 : (d.risk >= 3 ? 20 : 15))
+        .attr('fill', nodeColors)
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 3);
+
+    // Add risk indicators for high-risk nodes
+    node.filter(d => d.risk >= 3)
+        .append('text')
+        .attr('class', 'risk-indicator')
+        .attr('dy', 4)
+        .text(d => d.risk);
+
+    node.append('text')
+        .attr('class', 'node-label')
+        .attr('dy', d => d.type === 'central' ? -35 : -20)
+        .attr('text-anchor', 'middle')
+        .text(d => d.label);
+
+    node.append('text')
+        .attr('class', 'node-sublabel')
+        .attr('dy', d => d.type === 'central' ? -22 : -8)
+        .attr('text-anchor', 'middle')
+        .text(d => d.sublabel || '');
+
+    // Tooltip
+    const tooltip = d3.select('#tooltip');
+
+    node.on('mouseover', function(event, d) {
+        const roles = d.roles ? d.roles.join(', ') : 'N/A';
+        const riskLevel = d.risk >= 3 ? 'CRITICAL' : d.risk === 2 ? 'HIGH' : 'MODERATE';
+        
+        tooltip.style('display', 'block')
+            .html(`
+                <strong>${d.label}</strong><br>
+                ${d.sublabel ? `<em>${d.sublabel}</em><br>` : ''}
+                <strong>City:</strong> ${d.city}<br>
+                <strong>Roles:</strong> ${roles}<br>
+                <strong>Risk Level:</strong> ${riskLevel}
+            `)
+            .style('left', (event.pageX + 10) + 'px')
+            .style('top', (event.pageY - 10) + 'px');
+    })
+    .on('mouseout', function() {
+        tooltip.style('display', 'none');
+    });
+
+    // Force simulation
+    const simulation = d3.forceSimulation(data.nodes)
+        .force('link', d3.forceLink(data.links)
+            .id(d => d.id)
+            .distance(d => d.type === 'family' ? 80 : 120))
+        .force('charge', d3.forceManyBody().strength(-500))
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        .force('collision', d3.forceCollide().radius(40))
+        .force('x', d3.forceX(d => cityPositions[d.city]?.x || width / 2).strength(0.3))
+        .force('y', d3.forceY(d => cityPositions[d.city]?.y || height / 2).strength(0.3));
+
+    simulation.on('tick', () => {
+        link.attr('d', d => {
+            const dx = d.target.x - d.source.x;
+            const dy = d.target.y - d.source.y;
+            const dr = Math.sqrt(dx * dx + dy * dy) * 2;
+            return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`;
+        });
+
+        linkLabels
+            .attr('x', d => (d.source.x + d.target.x) / 2)
+            .attr('y', d => (d.source.y + d.target.y) / 2);
+
+        node.attr('transform', d => `translate(${d.x},${d.y})`);
+    });
+
+    // Drag functions
+    function dragstarted(event, d) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
+
+    function dragged(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+    }
+
+    function dragended(event, d) {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+    }
+
+    // Control functions
+    function resetView() {
+        svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
+    }
+
+    let clustersVisible = true;
+    function toggleClusters() {
+        clustersVisible = !clustersVisible;
+        clusterGroup.transition().duration(300)
+            .style('opacity', clustersVisible ? 1 : 0);
+    }
+
+    function highlightFamilyLinks() {
+        link.transition().duration(300)
+            .attr('opacity', d => d.type === 'family' ? 1 : 0.1)
+            .attr('stroke-width', d => d.type === 'family' ? 4 : 2);
+        setTimeout(() => resetHighlight(), 3000);
+    }
+
+    function highlightSecurityLinks() {
+        link.transition().duration(300)
+            .attr('opacity', d => d.type === 'security' || d.type === 'feedback' ? 1 : 0.1)
+            .attr('stroke-width', d => d.type === 'security' || d.type === 'feedback' ? 4 : 2);
+        setTimeout(() => resetHighlight(), 3000);
+    }
+
+    function highlightOberrat() {
+        link.transition().duration(300)
+            .attr('opacity', d => d.type === 'oberrat' ? 1 : 0.1)
+            .attr('stroke-width', d => d.type === 'oberrat' ? 4 : 2);
+        node.select('circle').transition().duration(300)
+            .attr('opacity', d => d.roles && d.roles.includes('Oberrat') ? 1 : 0.3);
+        setTimeout(() => resetHighlight(), 3000);
+    }
+
+    function resetHighlight() {
+        link.transition().duration(300)
+            .attr('opacity', 0.6)
+            .attr('stroke-width', 2);
+        node.select('circle').transition().duration(300)
+            .attr('opacity', 1);
+    }
+
+    // Initial zoom to fit
+    setTimeout(() => {
+        const bounds = g.node().getBBox();
+        const fullWidth = bounds.width;
+        const fullHeight = bounds.height;
+        const midX = bounds.x + fullWidth / 2;
+        const midY = bounds.y + fullHeight / 2;
+        
+        const scale = 0.85 / Math.max(fullWidth / width, fullHeight / height);
+        const translate = [width / 2 - scale * midX, height / 2 - scale * midY];
+        
+        svg.transition().duration(750)
+            .call(zoom.transform, d3.zoomIdentity
+                .translate(translate[0], translate[1])
+                .scale(scale));
+    }, 100);
+</script>
+```
+
+</body>
+</html>
