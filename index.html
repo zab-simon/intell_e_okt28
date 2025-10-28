@@ -22,13 +22,13 @@
         }
         
         .title h1 {
-            font-size: 22px;
+            font-size: 24px;
             margin: 10px 0;
             font-weight: 600;
         }
         
         .title h2 {
-            font-size: 16px;
+            font-size: 18px;
             margin: 5px 0;
             font-weight: 400;
             color: #555;
@@ -119,7 +119,7 @@
         <h2>IRG Baden (2025)</h2>
     </div>
     
-    <canvas id="networkCanvas" width="1200" height="900"></canvas>
+    <canvas id="networkCanvas" width="1400" height="1000"></canvas>
     
     <div class="controls">
         <button onclick="resetView()">Ansicht zurücksetzen</button>
@@ -172,84 +172,181 @@
         
         // Central node
         const center = {
-            x: 600,
-            y: 450,
+            x: 700,
+            y: 500,
             label: "Rami Suliman",
-            subtitle: "Vorsitzende der IRG Baden"
+            subtitle: "Vorsitzende IRG Baden"
         };
         
-        // City clusters with their connections
+        // City clusters positioned in circle around center
+        const radius = 320;
         const clusters = [
             {
                 city: "Pforzheim",
-                x: 300, y: 200,
+                angle: 210,
                 nodes: [
-                    { label: "Cousin (Security)", deps: ["familie", "sicherheit"] }
+                    { 
+                        label: "Cousin (Security)", 
+                        deps: ["familie", "sicherheit"],
+                        offsetX: -20,
+                        offsetY: 0
+                    }
                 ]
             },
             {
                 city: "Lörrach",
-                x: 200, y: 400,
+                angle: 180,
                 nodes: [
-                    { label: "Frau Shenker", subtitle: "Vorsitzende & Oberrat", deps: ["oberrat"] },
-                    { label: "Sohn (Security)", deps: ["familie", "sicherheit"], parent: 0 }
+                    { 
+                        label: "Frau Shenker", 
+                        subtitle: "Vorsitzende & Oberrat", 
+                        deps: ["oberrat"],
+                        offsetX: -50,
+                        offsetY: -10
+                    },
+                    { 
+                        label: "Sohn (Security)", 
+                        deps: ["familie", "sicherheit"], 
+                        parent: 0,
+                        offsetX: -50,
+                        offsetY: 20
+                    }
                 ]
             },
             {
                 city: "Konstanz",
-                x: 450, y: 150,
+                angle: 240,
                 nodes: [
-                    { label: "Herr Albilia", subtitle: "IRG-Mitarbeiter, Oberrat-Ersatz, Vorstand", deps: ["sicherheit", "oberrat"] },
-                    { label: "Sohn (Security)", deps: ["familie", "sicherheit"], parent: 0 }
+                    { 
+                        label: "Herr Albilia", 
+                        subtitle: "IRG-Mitarbeiter, Oberrat-Ersatz", 
+                        deps: ["sicherheit", "oberrat"],
+                        offsetX: 0,
+                        offsetY: -30
+                    },
+                    { 
+                        label: "Sohn (Security)", 
+                        deps: ["familie", "sicherheit"], 
+                        parent: 0,
+                        offsetX: 0,
+                        offsetY: 10
+                    }
                 ]
             },
             {
                 city: "Freiburg",
-                x: 250, y: 600,
+                angle: 150,
                 nodes: [
-                    { label: "Irina Katz", subtitle: "Vorsitzende & Oberrat", deps: ["oberrat"] },
-                    { label: "Sohn Nikita (Security)", deps: ["familie", "sicherheit"], parent: 0 }
+                    { 
+                        label: "Irina Katz", 
+                        subtitle: "Vorsitzende & Oberrat", 
+                        deps: ["oberrat"],
+                        offsetX: -60,
+                        offsetY: 10
+                    },
+                    { 
+                        label: "Sohn Nikita (Security)", 
+                        deps: ["familie", "sicherheit"], 
+                        parent: 0,
+                        offsetX: -60,
+                        offsetY: 40
+                    }
                 ]
             },
             {
                 city: "Rottweil",
-                x: 550, y: 700,
+                angle: 90,
                 nodes: [
-                    { label: "Tatiana Malafi", subtitle: "Vorsitzende / Geschäftsführerin", deps: ["sicherheit"] },
-                    { label: "Sohn Mischa", subtitle: "Security-Chef, Oberrat-Ersatz", deps: ["familie", "sicherheit", "oberrat"], parent: 0 }
+                    { 
+                        label: "Tatiana Malafi", 
+                        subtitle: "Vorsitzende / Geschäftsführerin", 
+                        deps: ["sicherheit"],
+                        offsetX: 0,
+                        offsetY: 40
+                    },
+                    { 
+                        label: "Sohn Mischa", 
+                        subtitle: "Security-Chef, Oberrat-Ersatz", 
+                        deps: ["familie", "sicherheit", "oberrat"], 
+                        parent: 0,
+                        offsetX: 0,
+                        offsetY: 80
+                    }
                 ]
             },
             {
                 city: "Emmendingen",
-                x: 850, y: 250,
+                angle: 300,
                 nodes: [
-                    { label: "Olga Maryanovskaya", subtitle: "Vorsitzende & Oberrat", deps: ["oberrat"] },
-                    { label: "Tochter (Jugendchefin)", deps: ["familie", "sicherheit"], parent: 0 },
-                    { label: "Ruslan Manasherov", subtitle: "Security-Chef & Oberrat", deps: ["sicherheit", "oberrat"] }
+                    { 
+                        label: "Olga Maryanovskaya", 
+                        subtitle: "Vorsitzende & Oberrat", 
+                        deps: ["oberrat"],
+                        offsetX: 30,
+                        offsetY: -40
+                    },
+                    { 
+                        label: "Tochter (Jugendchefin)", 
+                        deps: ["familie", "sicherheit"], 
+                        parent: 0,
+                        offsetX: 60,
+                        offsetY: -10
+                    },
+                    { 
+                        label: "Ruslan Manasherov", 
+                        subtitle: "Security-Chef & Oberrat", 
+                        deps: ["sicherheit", "oberrat"],
+                        offsetX: 60,
+                        offsetY: 20
+                    }
                 ]
             },
             {
                 city: "Baden-Baden",
-                x: 950, y: 450,
+                angle: 330,
                 nodes: [
-                    { label: "ehem. Security-Chef Koch", deps: ["sicherheit"] }
+                    { 
+                        label: "ehem. Security-Chef Koch", 
+                        deps: ["sicherheit"],
+                        offsetX: 50,
+                        offsetY: 0
+                    }
                 ]
             },
             {
                 city: "Heidelberg",
-                x: 800, y: 600,
+                angle: 30,
                 nodes: [
-                    { label: "Dima", subtitle: "Hausmeister + Lieferdienste", deps: ["sicherheit"] }
+                    { 
+                        label: "Dima", 
+                        subtitle: "Hausmeister + Lieferdienste", 
+                        deps: ["sicherheit"],
+                        offsetX: 40,
+                        offsetY: 10
+                    }
                 ]
             },
             {
                 city: "Mannheim",
-                x: 950, y: 700,
+                angle: 60,
                 nodes: [
-                    { label: "Sicherheitskraft", subtitle: "Revierfahrer-Hintergrund", deps: ["sicherheit"] }
+                    { 
+                        label: "Sicherheitskraft", 
+                        subtitle: "Revierfahrer-Hintergrund", 
+                        deps: ["sicherheit"],
+                        offsetX: 40,
+                        offsetY: 30
+                    }
                 ]
             }
         ];
+        
+        // Calculate actual positions
+        clusters.forEach(cluster => {
+            const angleRad = (cluster.angle * Math.PI) / 180;
+            cluster.x = center.x + radius * Math.cos(angleRad);
+            cluster.y = center.y + radius * Math.sin(angleRad);
+        });
         
         const depColors = {
             familie: "#dc2626",
@@ -267,12 +364,10 @@
                 ctx.setLineDash([5, 5]);
             }
             
-            // Calculate arrow direction
             const angle = Math.atan2(toY - fromY, toX - fromX);
-            const headLength = 12;
+            const headLength = 15;
             
-            // Shorten line to not overlap with center circle
-            const shortenTo = 45;
+            const shortenTo = 50;
             const dx = toX - fromX;
             const dy = toY - fromY;
             const length = Math.sqrt(dx * dx + dy * dy);
@@ -280,13 +375,11 @@
             const endX = fromX + dx * ratio;
             const endY = fromY + dy * ratio;
             
-            // Draw line
             ctx.beginPath();
             ctx.moveTo(fromX, fromY);
             ctx.lineTo(endX, endY);
             ctx.stroke();
             
-            // Draw arrow head
             ctx.beginPath();
             ctx.moveTo(endX, endY);
             ctx.lineTo(
@@ -303,6 +396,24 @@
             ctx.restore();
         }
         
+        function wrapText(text, maxWidth) {
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = words[0];
+            
+            for (let i = 1; i < words.length; i++) {
+                const width = ctx.measureText(currentLine + " " + words[i]).width;
+                if (width < maxWidth) {
+                    currentLine += " " + words[i];
+                } else {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        }
+        
         function drawNetwork() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.save();
@@ -316,74 +427,116 @@
                 ctx.lineWidth = 2;
                 ctx.setLineDash([8, 4]);
                 ctx.beginPath();
-                ctx.arc(cluster.x, cluster.y, 80, 0, Math.PI * 2);
+                ctx.arc(cluster.x, cluster.y, 100, 0, Math.PI * 2);
                 ctx.stroke();
                 ctx.setLineDash([]);
                 
                 // City label
                 ctx.fillStyle = "#1e40af";
-                ctx.font = "bold 16px sans-serif";
+                ctx.font = "bold 18px sans-serif";
                 ctx.textAlign = "center";
-                ctx.fillText(cluster.city, cluster.x, cluster.y - 95);
+                ctx.fillText(cluster.city, cluster.x, cluster.y - 115);
                 
-                // Draw nodes and connections
+                // Draw connections first (so they're behind nodes)
                 cluster.nodes.forEach((node, idx) => {
-                    const nodeX = cluster.x + (idx - (cluster.nodes.length - 1) / 2) * 35;
-                    const nodeY = cluster.y + 20;
+                    const nodeX = cluster.x + (node.offsetX || 0);
+                    const nodeY = cluster.y + (node.offsetY || 0);
                     
                     // Draw feedback loop if node has parent
                     if (node.parent !== undefined) {
-                        const parentX = cluster.x + (node.parent - (cluster.nodes.length - 1) / 2) * 35;
-                        const parentY = cluster.y + 20;
-                        drawArrow(parentX, parentY - 8, nodeX, nodeY - 8, "#999", 1, true);
+                        const parent = cluster.nodes[node.parent];
+                        const parentX = cluster.x + (parent.offsetX || 0);
+                        const parentY = cluster.y + (parent.offsetY || 0);
+                        
+                        // Curved feedback arrow
+                        ctx.strokeStyle = "#999";
+                        ctx.lineWidth = 1.5;
+                        ctx.setLineDash([5, 5]);
+                        ctx.beginPath();
+                        ctx.moveTo(parentX + 10, parentY);
+                        const cpX = (parentX + nodeX) / 2 - 30;
+                        const cpY = (parentY + nodeY) / 2;
+                        ctx.quadraticCurveTo(cpX, cpY, nodeX + 10, nodeY);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                        
+                        // Small arrow head
+                        const angle = Math.atan2(nodeY - cpY, nodeX + 10 - cpX);
+                        ctx.fillStyle = "#999";
+                        ctx.beginPath();
+                        ctx.moveTo(nodeX + 10, nodeY);
+                        ctx.lineTo(
+                            nodeX + 10 - 8 * Math.cos(angle - Math.PI / 6),
+                            nodeY - 8 * Math.sin(angle - Math.PI / 6)
+                        );
+                        ctx.lineTo(
+                            nodeX + 10 - 8 * Math.cos(angle + Math.PI / 6),
+                            nodeY - 8 * Math.sin(angle + Math.PI / 6)
+                        );
+                        ctx.closePath();
+                        ctx.fill();
                     }
                     
                     // Draw connections to center
                     node.deps.forEach((dep, depIdx) => {
-                        const width = node.deps.length * 1.5 + 1;
-                        const offsetAngle = (depIdx - (node.deps.length - 1) / 2) * 0.05;
-                        const adjustedCenterX = center.x + Math.cos(offsetAngle) * 10;
-                        const adjustedCenterY = center.y + Math.sin(offsetAngle) * 10;
-                        drawArrow(nodeX, nodeY, adjustedCenterX, adjustedCenterY, depColors[dep], width);
+                        const width = node.deps.length * 2 + 2;
+                        drawArrow(nodeX, nodeY, center.x, center.y, depColors[dep], width);
                     });
+                });
+                
+                // Draw nodes and labels
+                cluster.nodes.forEach((node, idx) => {
+                    const nodeX = cluster.x + (node.offsetX || 0);
+                    const nodeY = cluster.y + (node.offsetY || 0);
                     
                     // Draw node circle
                     ctx.fillStyle = "#f0f9ff";
                     ctx.strokeStyle = "#3b82f6";
-                    ctx.lineWidth = 2;
+                    ctx.lineWidth = 2.5;
                     ctx.beginPath();
-                    ctx.arc(nodeX, nodeY, 8, 0, Math.PI * 2);
+                    ctx.arc(nodeX, nodeY, 10, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.stroke();
                     
-                    // Node label
+                    // Node labels with better positioning
                     if (showLabels) {
                         ctx.fillStyle = "#1a1a1a";
-                        ctx.font = "11px sans-serif";
-                        ctx.textAlign = "center";
-                        ctx.fillText(node.label, nodeX, nodeY + 25);
+                        ctx.font = "bold 12px sans-serif";
+                        ctx.textAlign = "left";
+                        
+                        const labelX = nodeX + 15;
+                        const labelY = nodeY + 4;
+                        
+                        const lines = wrapText(node.label, 120);
+                        lines.forEach((line, lineIdx) => {
+                            ctx.fillText(line, labelX, labelY + lineIdx * 14);
+                        });
+                        
                         if (node.subtitle) {
                             ctx.fillStyle = "#666";
-                            ctx.font = "9px sans-serif";
-                            ctx.fillText(node.subtitle, nodeX, nodeY + 37);
+                            ctx.font = "11px sans-serif";
+                            const subLines = wrapText(node.subtitle, 120);
+                            subLines.forEach((line, lineIdx) => {
+                                ctx.fillText(line, labelX, labelY + (lines.length + lineIdx) * 14 + 2);
+                            });
                         }
                     }
                 });
             });
             
-            // Draw center node (Rami Suliman)
+            // Draw center node (Rami Suliman) - on top
             ctx.fillStyle = "#1e40af";
             ctx.beginPath();
-            ctx.arc(center.x, center.y, 40, 0, Math.PI * 2);
+            ctx.arc(center.x, center.y, 45, 0, Math.PI * 2);
             ctx.fill();
             
             ctx.fillStyle = "white";
-            ctx.font = "bold 14px sans-serif";
+            ctx.font = "bold 16px sans-serif";
             ctx.textAlign = "center";
-            ctx.fillText("Rami Suliman", center.x, center.y - 5);
-            ctx.font = "10px sans-serif";
+            ctx.fillText("Rami Suliman", center.x, center.y - 8);
+            ctx.font = "12px sans-serif";
             ctx.fillText("Vorsitzende", center.x, center.y + 8);
-            ctx.fillText("IRG Baden", center.x, center.y + 20);
+            ctx.fillText("IRG Baden", center.x, center.y + 24);
             
             ctx.restore();
         }
@@ -418,6 +571,10 @@
         });
         
         canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+        
+        canvas.addEventListener('mouseleave', () => {
             isDragging = false;
         });
         
