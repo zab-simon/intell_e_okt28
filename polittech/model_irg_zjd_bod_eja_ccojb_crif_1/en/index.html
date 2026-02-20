@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leadership Probability Model</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1d3a 100%);
+            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 15px;
+            min-height: 100vh;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid #00d4ff;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 1.8em;
+            color: #00d4ff;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            margin-bottom: 10px;
+        }
+        
+        .header h2 {
+            font-size: 0.9em;
+            color: #7c8db5;
+            font-weight: 300;
+            line-height: 1.4;
+        }
+        
+        .section {
+            background: rgba(26, 29, 58, 0.6);
+            border: 1px solid #2a3f5f;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .section-title {
+            font-size: 1.3em;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #00d4ff;
+        }
+        
+        .chart-container {
+            background: rgba(15, 18, 35, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid #2a3f5f;
+            margin-bottom: 20px;
+            position: relative;
+            height: 350px;
+        }
+        
+        .controls {
+            background: rgba(15, 18, 35, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 2px solid #00d4ff;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        .control-label {
+            display: block;
+            color: #00d4ff;
+            font-size: 1em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .slider {
+            flex: 1;
+            height: 8px;
+            border-radius: 5px;
+            background: #2a3f5f;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #00d4ff;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #00d4ff;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
+        }
+        
+        .slider-value {
+            min-width: 70px;
+            text-align: right;
+            color: #00ff88;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        
+        .probability-display {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #1a1d3a 0%, #0a0e27 100%);
+            border-radius: 15px;
+            margin: 25px 0;
+            border: 3px solid #00d4ff;
+        }
+        
+        .probability-value {
+            font-size: 3em;
+            color: #00ff88;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.6);
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .probability-label {
+            font-size: 1em;
+            color: #7c8db5;
+            margin-bottom: 10px;
+        }
+        
+        .comparison-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .candidate-box {
+            background: rgba(15, 18, 35, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid;
+        }
+        
+        .candidate-box.yaron {
+            border-color: #00ff88;
+        }
+        
+        .candidate-box.eric {
+            border-color: #ff6b6b;
+        }
+        
+        .candidate-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .candidate-prob {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            background: rgba(15, 18, 35, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #2a3f5f;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: #7c8db5;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            color: #00ff88;
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔷 PROBABILITY MODEL</h1>
+        <h2>Yaron Popper vs Eric Balter — Multi-Level Leadership Projection (4-Year Horizon)</h2>
+    </div>
+
+    <div class="controls">
+        <h3 style="color: #00d4ff; margin-bottom: 15px; font-size: 1.3em;">📊 Interactive Controls</h3>
+        
+        <div class="control-group">
+            <label class="control-label">Turnout Rate</label>
+            <div class="slider-container">
+                <input type="range" class="slider" id="turnoutSlider" min="40" max="60" value="50" step="1">
+                <span class="slider-value" id="turnoutValue">50%</span>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label class="control-label">Recognition Growth (4 years)</label>
+            <div class="slider-container">
+                <input type="range" class="slider" id="recognitionSlider" min="80" max="95" value="90" step="1">
+                <span class="slider-value" id="recognitionValue">0.90</span>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label class="control-label">Institutional Control (Eric)</label>
+            <div class="slider-container">
+                <input type="range" class="slider" id="institutionalSlider" min="45" max="70" value="50" step="1">
+                <span class="slider-value" id="institutionalValue">0.50</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="probability-display">
+        <div class="probability-label">YARON POPPER WIN PROBABILITY</div>
+        <div class="probability-value pulse" id="mainProbability">63.8%</div>
+        <div class="comparison-box">
+            <div class="candidate-box yaron">
+                <div class="candidate-name" style="color: #00ff88;">Yaron Popper</div>
+                <div class="candidate-prob" style="color: #00ff88;" id="yaronProb">63.8%</div>
+            </div>
+            <div class="candidate-box eric">
+                <div class="candidate-name" style="color: #ff6b6b;">Eric Balter</div>
+                <div class="candidate-prob" style="color: #ff6b6b;" id="ericProb">31.4%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">🔵 SECTION 1 — ELECTORATE STRUCTURE</div>
+        
+        <div class="stat-grid">
+            <div class="stat-box">
+                <div class="stat-label">Community Size</div>
+                <div class="stat-value">8K-30K</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Expected Turnout</div>
+                <div class="stat-value">40-60%</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Active Voters</div>
+                <div class="stat-value">3.2K-18K</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Parent Impact</div>
+                <div class="stat-value">15.4%</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="chart1"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="chart2"></canvas>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">🟠 SECTION 2 — LEADERSHIP PERFORMANCE</div>
+        
+        <div class="chart-container">
+            <canvas id="chart3"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="chart4"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="chart5"></canvas>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">🔵 SECTION 3 — MONTE CARLO SIMULATION</div>
+        
+        <div class="stat-grid">
+            <div class="stat-box">
+                <div class="stat-label">Yaron Win Prob</div>
+                <div class="stat-value">63.8%</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Eric Win Prob</div>
+                <div class="stat-value">31.4%</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Pessimistic</div>
+                <div class="stat-value">52%</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Optimistic</div>
+                <div class="stat-value">74%</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="chart6"></canvas>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">🟣 SECTION 4 — SENSITIVITY ANALYSIS</div>
+        
+        <div class="chart-container">
+            <canvas id="chart7"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="chart8"></canvas>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">🔴 SECTION 5 — CAREER LADDER PROJECTION</div>
+        
+        <div class="stat-grid">
+            <div class="stat-box">
+                <div class="stat-label">Local Chair</div>
+                <div class="stat-value">64%</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Regional Council</div>
+                <div class="stat-value">35%</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">National Council</div>
+                <div class="stat-value">12%</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="chart9"></canvas>
+        </div>
+    </div>
+
+    <script>
+        Chart.defaults.color = '#e0e0e0';
+        Chart.defaults.borderColor = '#2a3f5f';
+
+        // Chart 1: Community Size
+        new Chart(document.getElementById('chart1'), {
+            type: 'bar',
+            data: {
+                labels: ['Min', 'Expected', 'Max'],
+                datasets: [{
+                    label: 'Community Size',
+                    data: [8000, 19000, 30000],
+                    backgroundColor: ['#ff6b6b', '#ffd93d', '#00ff88'],
+                    borderColor: '#00d4ff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Chart 1 — Community Size Range',
+                        color: '#00d4ff',
+                        font: { size: 16 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#2a3f5f' }
+                    }
+                }
+            }
+        });
+
+        // Chart 2: Demographics Pie
+        new Chart(document.getElementById('chart2'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Parents (25-40)', 'Others'],
+                datasets: [{
+                    data: [15.4, 84.6],
+                    backgroundColor: ['#00ff88', '#7c8db5'],
+                    borderColor: '#00d4ff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Chart 2 — Voter Demographics',
+                        color: '#00d4ff',
+                        font: { size: 16 }
+                    }
+                }
+            }
+        });
+
+        // Chart 3: Recognition Growth
+        new Chart(document.getElementById('chart3'), {
+            type: 'line',
+            data: {
+                labels: ['Year 0', 'Year 1', 'Year 2', 'Year 3', 'Year 4'],
+                datasets: [{
+                    label: 'Yaron Recognition',
+                    data: [0.25, 0.45, 0.65, 0.80, 0.90],
+                    borderColor: '#00ff88',
+                    backgroundColor: 'rgba(0, 255, 136, 0.2)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Chart 3 — Recognition Growth Curve (Yaron)',
+                        color: '#00d4ff',
+                        font: { size: 16 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 1,
+                        grid: { color: '#2a3f5f' }
+                    }
+                }
+            }
+        });
+
+        // Chart 4: Speech Ability
+        new Chart(document.getElementById('chart4'), {
+            type: 'bar',
+            data: {
+                labels: ['Yaron Popper', 'Eric Balter'],
+                datasets: [{
+                    label: 'Speech Ability',
+                    data: [1.0, 0.4],
+                    backgroundColor: ['#00ff88', '#ff6b6b'],
+                    borderColor: '#00d4ff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Chart 4 — Speech Ability Comparison',
+                        color: '#00d4ff',
+                        font: { size: 16 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 1.2,
+                        grid: { color: '#2a3f5f' }
+                    }
+                }
+            }
+        });
+
+        // Chart 5: Leadership Index
+        new Chart(document.getElementById('chart5'), {
+            type: 'line',
+            data: {
+                labels: ['Year 0', 'Year 1', 'Year 2', 'Year 3', 'Year 4'],
+                datasets: [
+                    {
+                        label: 'Yaron',
+                        data: [0.4, 0.52, 0.64, 0.76, 0.87],
+                        borderColor: '#00ff88',
+                        backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 3
+                    },
+                    {
+                        label: 'Eric',
+                        data: [0.65, 0.61, 0.57, 0.53, 0.48],
+                        borderColor: '#ff6b6b',
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Chart 5 — Composite Leadership Index',
+                        color: '#00d4ff',
+                        font: { size: 16 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 1,
+                        grid: { color: '#2a3f5f' }
+                    }
+                }
+            }
+        });
+
+        // Chart 6: Scenarios
+        new Chart(document.getElementById('chart6'), {
+            type: 'bar',
+            data: {
+                labels: ['Pessimistic', 'Base Case', 'Optimistic'],
+                datasets: [{
+                    label: 'Win Probability %',
+                    data: [52, 64, 74],
+                    backgroundColor: ['#ff6b6b', '#ffd93d', '#00ff88'],
+                    borderColor: '#00d4ff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Chart 6 — Scenario Analysis',
+                        color: '#00d4ff',
+                        font: { size: 16 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 80,
+                        grid: { color: '#2a3f5f' }
+                    }
+                }
+            }
+        });
+
+        // Chart 7: Sensitivity
+        new Chart(document.getElementById('chart7'), {
+            type: 'bar',
+            data: {
+                labels: ['Recognition', 'Institutional', 'Fragmentation', 'Parents', 'Alliance'],
+                datasets: [{
+                    label: 'Impact ±%',
+                    data: [10, 9, 7, 4, 3],
+                    backgroundColor: ['#00ff88', '#00d4ff', '#ffd93d', '#ff9f43', '#ff6b6b'],
+                    borderColor: '#00d4ff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Chart 7 — Tornado Sensitivity Diagram',
+                        color: '#00d4ff',
+                        font: { size: 16 }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: { color: '#2a3f5f' }
+                    }
+                }
+            }
+        });
+
+        // Chart 8: Fragmentation
+        new Chart(document.getElementById('chart8'), {
+            type: 'line',
+            data: {
+                labels: ['3', '4', '5', '6', '7'],
+                datasets: [{
+                    label: 'Win Probability %',
+                    data: [58, 64, 68, 72, 74],
+                    borderColor: '#00d4ff',
+                    backgroundColor: 'rgba(0, 212, 255, 0.2)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Chart 8 — Candidate Fragmentation Impact',
+                        color: '#00d4ff',
+                        font: { size: 16 }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Number of Candidates',
+                            color: '#7c8db5'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#2a3f5f' }
+                    }
+                }
+            }
+        });
+
+        // Chart 9: Career Ladder
+        new Chart(document.getElementById('chart9'), {
+            type: 'bar',
+            data: {
+                labels: ['Local Chair', 'Regional Council', 'National Council'],
+                datasets: [{
+                    label: 'Success Probability %',
+                    data: [64, 35, 12],
+                    backgroundColor: ['#00ff88', '#ffd93d', '#ff9f43'],
+                    borderColor: '#00d4ff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Chart 9 — Career Probability Ladder',
+                        color: '#00d4ff',
+                        font: { size: 16 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 75,
+                        grid: { color: '#2a3f5f' }
+                    }
+                }
+            }
+        });
+
+        // Interactive controls
+        const sliders = {
+            turnout: document.getElementById('turnoutSlider'),
+            recognition: document.getElementById('recognitionSlider'),
+            institutional: document.getElementById('institutionalSlider')
+        };
+
+        const values = {
+            turnout: document.getElementById('turnoutValue'),
+            recognition: document.getElementById('recognitionValue'),
+            institutional: document.getElementById('institutionalValue')
+        };
+
+        function calculateProbability() {
+            const turnout = parseInt(sliders.turnout.value);
+            const recognition = parseInt(sliders.recognition.value) / 100;
+            const institutional = parseInt(sliders.institutional.value) / 100;
+            
+            const base = 63.8;
+            const turnoutAdj = (turnout - 50) * 0.3;
+            const recogAdj = (recognition - 0.90) * 20;
+            const instAdj = (0.50 - institutional) * 15;
+            
+            let yaronProb = base + turnoutAdj + recogAdj + instAdj;
+            yaronProb = Math.max(35, Math.min(85, yaronProb));
+            const ericProb = Math.max(10, Math.min(55, 95 - yaronProb - Math.random() * 8));
+            
+            document.getElementById('mainProbability').textContent = yaronProb.toFixed(1) + '%';
+            document.getElementById('yaronProb').textContent = yaronProb.toFixed(1) + '%';
+            document.getElementById('ericProb').textContent = ericProb.toFixed(1) + '%';
+        }
+
+        sliders.turnout.addEventListener('input', function(e) {
+            values.turnout.textContent = e.target.value + '%';
+            calculateProbability();
+        });
+
+        sliders.recognition.addEventListener('input', function(e) {
+            values.recognition.textContent = (e.target.value / 100).toFixed(2);
+            calculateProbability();
+        });
+
+        sliders.institutional.addEventListener('input', function(e) {
+            values.institutional.textContent = (e.target.value / 100).toFixed(2);
+            calculateProbability();
+        });
+    </script>
+</body>
+</html>
